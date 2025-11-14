@@ -2,7 +2,7 @@ Flask #Permite crear páginas Web
 gunicorn
 pymongo
 python-dotenv # Trabajar con entornos
-requests 
+requests
 bcrypt # Encriptación de información
 pandas
 numpy
