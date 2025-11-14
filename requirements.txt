@@ -1,9 +1,9 @@
-Flask #Permite crear páginas Web
+Flask 
 gunicorn
 pymongo
-python-dotenv # Trabajar con entornos
+python-dotenv
 requests
-bcrypt # Encriptación de información
+bcrypt
 pandas
 numpy
 elasticsearch==8.11.0
