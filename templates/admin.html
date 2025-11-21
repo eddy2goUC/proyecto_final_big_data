@@ -26,9 +26,24 @@
     <div class="container mt-2">
         <h1 class="text-center mb-4">Panel de Administración</h1>
         <p class="text-center mb-4">Bienvenido al panel de administración. Aquí puedes gestionar las bases de datos MongoDB y las configuraciones de ElasticSearch.</p>
-        <a href="/gestor_usuarios" class="btn btn-primary">Gestionar Usuarios</a>
-        <a href="/gestor_elastic" class="btn btn-primary">Gestionar Elastic</a>
-        <a href="/cargar_doc_elastic" class="btn btn-primary">Cargar archivos a Elastic</a>
+        
+        {% if permisos and permisos.get('admin_usuarios') %}
+            <a href="/gestor_usuarios" class="btn btn-primary">Gestionar Usuarios</a>
+        {% else %}
+            <div class="alert alert-warning">No tiene permiso para gestionar usuarios (admin_usuarios)</div>
+        {% endif %}
+        
+        {% if permisos and permisos.get('admin_elastic') %}
+            <a href="/gestor_elastic" class="btn btn-primary">Gestionar Elastic</a>
+        {% else %}
+            <div class="alert alert-warning">No tiene permiso para gestionar Elastic (admin_elastic)</div>
+        {% endif %}
+        
+        {% if permisos and permisos.get('admin_data_elastic') %}
+            <a href="/cargar_doc_elastic" class="btn btn-primary">Cargar archivos a Elastic</a>
+        {% else %}
+            <div class="alert alert-warning">No tiene permiso para cargar archivos a Elastic (admin_data_elastic)</div>
+        {% endif %}
     </div>
     <footer class="text-center">
         <p class="mb-0">Creado por {{ creador }}</p>
