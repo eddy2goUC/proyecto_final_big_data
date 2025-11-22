@@ -34,8 +34,8 @@ class Funciones:
                         nombre_archivo = os.path.basename(file_info)
                         extension = os.path.splitext(nombre_archivo)[1].lower()
                         
-                        # Solo procesar txt y pdf
-                        if extension in ['.txt', '.pdf']:
+                        # Solo procesar txt, pdf y json
+                        if extension in ['.txt', '.pdf', '.json']:
                             zip_ref.extract(file_info, ruta_descomprimir)
                             archivos.append({
                                 'carpeta': carpeta if carpeta else 'raiz',
@@ -105,6 +105,10 @@ class Funciones:
                     elif os.path.isdir(item_path):
                         import shutil
                         shutil.rmtree(item_path)  # Eliminar directorio y su contenido
+<<<<<<< HEAD
+                        print(f"Eliminado directorio: {item_path}")
+=======
+>>>>>>> origin/main
                 except Exception as e:
                     print(f"Error al eliminar {item_path}: {e}")
                     return False

@@ -203,11 +203,21 @@ class ElasticSearch:
         
         Args:
             index: Nombre del índice
-            query: Query de búsqueda
+            query: Query de búsqueda (puede ser un dict completo con 'query' o solo la query)
+            aggs: Agregaciones a ejecutar (opcional)
             size: Número de resultados
         """
         try:
-            response = self.client.search(index=index, body=query, size=size)
+            # Construir el body de la búsqueda
+            body = query.copy() if query else {}
+            
+            # Agregar las agregaciones al body si existen
+            if aggs:
+                body['aggs'] = aggs
+            
+            # Ejecutar búsqueda
+            response = self.client.search(index=index, body=body, size=size)
+            
             return {
                 'success': True,
                 'total': response['hits']['total']['value'],
