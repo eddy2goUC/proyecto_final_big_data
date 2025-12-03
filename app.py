@@ -359,7 +359,7 @@ def cargar_doc_elastic():
     
     return render_template('documentos_elastic.html', usuario=session.get('usuario'), permisos=permisos, version=VERSION_APP, creador=CREATOR_APP)
 
-
+'''
 @app.route('/procesar-webscraping-elastic', methods=['POST'])
 def procesar_webscraping_elastic():
     """API para procesar Web Scraping"""
@@ -428,7 +428,7 @@ def procesar_webscraping_elastic():
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
-
+'''
 @app.route('/procesar-zip-elastic', methods=['POST'])
 def procesar_zip_elastic():
     """API para procesar archivo ZIP con archivos JSON"""
