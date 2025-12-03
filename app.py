@@ -1,11 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for,jsonify, session, flash
 from dotenv import load_dotenv
 import os
-<<<<<<< HEAD
 from datetime import datetime
 from werkzeug.utils import secure_filename
-=======
->>>>>>> origin/main
 from Helpers import MongoDB, ElasticSearch, Funciones, WebScraping
 
 # Cargar variables de entorno
@@ -359,6 +356,7 @@ def cargar_doc_elastic():
         return redirect(url_for('admin'))
     
     return render_template('documentos_elastic.html', usuario=session.get('usuario'), permisos=permisos, version=VERSION_APP, creador=CREATOR_APP)
+<<<<<<< HEAD
 
 @app.route('/procesar-webscraping-elastic', methods=['POST'])
 def procesar_webscraping_elastic():
@@ -593,6 +591,8 @@ def cargar_documentos_elastic():
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+=======
+>>>>>>> origin/main
 
 @app.route('/procesar-webscraping-elastic', methods=['POST'])
 def procesar_webscraping_elastic():
