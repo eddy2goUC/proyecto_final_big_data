@@ -108,6 +108,7 @@ class Funciones:
 
                         print(f"Eliminado directorio: {item_path}")
 
+
                 except Exception as e:
                     print(f"Error al eliminar {item_path}: {e}")
                     return False

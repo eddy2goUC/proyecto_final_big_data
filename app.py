@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for,jsonify, session, flash
 from dotenv import load_dotenv
 import os
+
 from datetime import datetime
 from werkzeug.utils import secure_filename
+
 
 from Helpers import MongoDB, ElasticSearch, Funciones, WebScraping
 
@@ -31,7 +33,7 @@ CREATOR_APP = "LuisFCG"
 mongo = MongoDB(MONGO_URI, MONGO_DB)
 elastic = ElasticSearch(ELASTIC_CLOUD_URL, ELASTIC_API_KEY)
 
-# ==================== RUTAS ====================
+# ====== RUTAS ======
 @app.route('/')
 def landing():
     """Landing page pública"""
@@ -82,8 +84,9 @@ def buscar_elastic():
 
                         } 
 
+                        }
 
-                    }
+                    
         aggs= {
             "cuentos_por_mes": {
                 "date_histogram": {
@@ -100,6 +103,7 @@ def buscar_elastic():
         }
         
 
+        # Ejecutar búsqueda sobre elastic
 
         # Ejecutar búsqueda con match_phrase
 
@@ -111,7 +115,9 @@ def buscar_elastic():
         )
 
         #print(resultado) 
-      
+
+
+        
         return jsonify(resultado)
         
     except Exception as e:
@@ -353,6 +359,7 @@ def cargar_doc_elastic():
     
     return render_template('documentos_elastic.html', usuario=session.get('usuario'), permisos=permisos, version=VERSION_APP, creador=CREATOR_APP)
 
+
 @app.route('/procesar-webscraping-elastic', methods=['POST'])
 def procesar_webscraping_elastic():
     """API para procesar Web Scraping"""
@@ -587,6 +594,8 @@ def cargar_documentos_elastic():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
+
 @app.route('/procesar-webscraping-elastic', methods=['POST'])
 def procesar_webscraping_elastic():
     """API para procesar Web Scraping"""
@@ -667,7 +676,7 @@ def admin():
 
 
 
-# ==================== MAIN ====================
+# ====== MAIN ======
 if __name__ == '__main__':
     # Crear carpetas necesarias
     Funciones.crear_carpeta('static/uploads')
