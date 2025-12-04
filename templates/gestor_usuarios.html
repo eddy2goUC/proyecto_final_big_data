@@ -3,107 +3,589 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Usuarios - BigData</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <title>Gestor de Usuarios - BigData-MiProyecto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="{{ url_for('static', filename='css/gestor.css') }}" rel="stylesheet">
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            background-color: #ffffff;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .header h2 i {
+            color: #4e54c8;
+            margin-right: 10px;
+        }
+        
+        .header b {
+            color: #4e54c8;
+            background-color: rgba(78, 84, 200, 0.1);
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+        
+        .nav-link {
+            color: #34495e !important;
+            font-weight: 500;
+            padding: 0.6rem 1.2rem !important;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-link:hover {
+            color: #4e54c8 !important;
+            background-color: rgba(78, 84, 200, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Contenido principal */
+        .main-container {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        /* Título y acciones */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .page-title i {
+            color: #4e54c8;
+        }
+        
+        .btn-create {
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(78, 84, 200, 0.3);
+        }
+        
+        .btn-create:hover {
+            background: linear-gradient(135deg, #3a3fa3 0%, #767cd9 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(78, 84, 200, 0.4);
+        }
+        
+        /* Tabla de usuarios */
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .table {
+            margin: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .table thead th {
+            background: linear-gradient(90deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 1.2rem 1rem;
+            text-align: center;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+        
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(78, 84, 200, 0.05);
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+        
+        .badge {
+            padding: 0.5rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .badge-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .badge-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%);
+            color: white;
+        }
+        
+        /* Botones de acción */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        .btn-edit {
+            background-color: #ffc107;
+            color: #212529;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-edit:hover {
+            background-color: #e0a800;
+            color: #212529;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+        }
+        
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-delete:hover {
+            background-color: #c82333;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+        
+        /* Mensaje de carga */
+        .loading-container {
+            background: white;
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            margin-top: 2rem;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(78, 84, 200, 0.2);
+            border-top: 4px solid #4e54c8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Modales */
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .modal-header {
+            background: linear-gradient(90deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            padding: 1.5rem 2rem;
+            border-bottom: none;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid #e9ecef;
+            padding: 1.5rem 2rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e1e5eb;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #4e54c8;
+            box-shadow: 0 0 0 0.25rem rgba(78, 84, 200, 0.25);
+        }
+        
+        .permissions-group {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .form-check {
+            margin-bottom: 0.75rem;
+        }
+        
+        .form-check-input:checked {
+            background-color: #4e54c8;
+            border-color: #4e54c8;
+        }
+        
+        .form-check-label {
+            color: #34495e;
+            font-weight: 500;
+        }
+        
+        .btn-modal-primary {
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-modal-primary:hover {
+            background: linear-gradient(135deg, #3a3fa3 0%, #767cd9 100%);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .btn-modal-secondary {
+            background-color: #6c757d;
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-modal-secondary:hover {
+            background-color: #5a6268;
+            color: white;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: auto;
+        }
+        
+        footer p {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        #current-year {
+            color: #8f94fb;
+            font-weight: 600;
+        }
+        
+        #version_app {
+            background-color: rgba(255, 255, 255, 0.1);
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            .table {
+                min-width: 900px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .page-title {
+                font-size: 1.6rem;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .btn-create {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .nav-link {
+                padding: 0.5rem 0.8rem !important;
+                font-size: 0.9rem;
+            }
+            
+            .modal-body {
+                padding: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .btn-edit, .btn-delete {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .header h2 {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            
+            .header b {
+                margin-left: 0;
+                font-size: 0.8rem;
+            }
+            
+            .page-title {
+                font-size: 1.4rem;
+            }
+            
+            .modal-header, .modal-body, .modal-footer {
+                padding: 1.25rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Header -->
     <header class="header">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <h2 class="h3 mb-0">BigData-MiProyecto <b>[{{ usuario }}]</b></h2>
+                <h2><i class="fas fa-database"></i>BigData-MiProyecto <b>[{{ usuario }}]</b></h2>
                 <nav>
                     <ul class="nav">
-                        <li class="nav-item"><a class="nav-link" href="/admin">Volver al admin</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/">Salir</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin">
+                                <i class="fas fa-arrow-left"></i><span>Volver al admin</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">
+                                <i class="fas fa-sign-out-alt"></i><span>Salir</span>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
         </div>
     </header>
-    <hr>
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3">Gestión de usuarios</h1>
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCrearUsuario">
-                <i class="bi bi-plus-circle"></i> Crear usuario
-            </button>
-        </div>
 
-        <!-- Tabla de usuarios -->
-        <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Usuario</th>
-                        <th>Password</th>
-                        <th>Login</th>
-                        <th>Admin Usuarios</th>
-                        <th>Admin Elastic</th>
-                        <th>Admin Data Elastic</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaUsuarios">
-                    <tr>
-                        <td colspan="7" class="text-center">Cargando usuarios...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Mensaje de carga -->
-        <div id="div_cargando" class="text-center mt-4" style="display: none;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
+    <!-- Contenido principal -->
+    <main class="main-container">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title"><i class="fas fa-users-cog"></i> GestiÓn de Usuarios</h1>
+                <button type="button" class="btn-create" data-bs-toggle="modal" data-bs-target="#modalCrearUsuario">
+                    <i class="fas fa-user-plus"></i> Crear Usuario
+                </button>
             </div>
-            <p class="mt-2">Procesando su solicitud...</p>
+
+            <!-- Tabla de usuarios -->
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Password</th>
+                            <th>Login</th>
+                            <th>Admin Usuarios</th>
+                            <th>Admin Elastic</th>
+                            <th>Admin Data Elastic</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaUsuarios">
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="spinner"></div>
+                                <p class="mt-2">Cargando usuarios...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mensaje de carga -->
+            <div id="div_cargando" class="loading-container" style="display: none;">
+                <div class="spinner"></div>
+                <h4 class="mb-3">Procesando solicitud</h4>
+                <p class="text-muted">Por favor espere mientras procesamos su solicitud...</p>
+            </div>
         </div>
-    </div>
+    </main>
 
     <!-- Modal Crear Usuario -->
     <div class="modal fade" id="modalCrearUsuario" tabindex="-1" aria-labelledby="modalCrearUsuarioLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalCrearUsuarioLabel">Crear Nuevo Usuario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title"><i class="fas fa-user-plus"></i> Crear Nuevo Usuario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="formCrearUsuario">
-                        <div class="mb-3">
-                            <label for="crear_usuario" class="form-label">Usuario</label>
-                            <input type="text" class="form-control" id="crear_usuario" name="usuario" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="crear_usuario" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" id="crear_usuario" name="usuario" required 
+                                       placeholder="Ingrese el nombre de usuario">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="crear_password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="crear_password" name="password" required 
+                                       placeholder="Ingrese la contraseña">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="crear_password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="crear_password" name="password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Permisos</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="crear_permiso_login" name="permisos" value="login" checked>
-                                <label class="form-check-label" for="crear_permiso_login">Login</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="crear_permiso_admin_usuarios" name="permisos" value="admin_usuarios">
-                                <label class="form-check-label" for="crear_permiso_admin_usuarios">Admin Usuarios</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="crear_permiso_admin_elastic" name="permisos" value="admin_elastic">
-                                <label class="form-check-label" for="crear_permiso_admin_elastic">Admin Elastic</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="crear_permiso_admin_data_elastic" name="permisos" value="admin_data_elastic">
-                                <label class="form-check-label" for="crear_permiso_admin_data_elastic">Admin Data Elastic</label>
+                        
+                        <label class="form-label">Permisos</label>
+                        <div class="permissions-group">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="crear_permiso_login" name="permisos" value="login" checked>
+                                        <label class="form-check-label" for="crear_permiso_login">
+                                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="crear_permiso_admin_usuarios" name="permisos" value="admin_usuarios">
+                                        <label class="form-check-label" for="crear_permiso_admin_usuarios">
+                                            <i class="fas fa-users-cog me-2"></i>Admin Usuarios
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="crear_permiso_admin_elastic" name="permisos" value="admin_elastic">
+                                        <label class="form-check-label" for="crear_permiso_admin_elastic">
+                                            <i class="fas fa-search me-2"></i>Admin Elastic
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="crear_permiso_admin_data_elastic" name="permisos" value="admin_data_elastic">
+                                        <label class="form-check-label" for="crear_permiso_admin_data_elastic">
+                                            <i class="fas fa-file-upload me-2"></i>Admin Data Elastic
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="crearUsuario()">Guardar</button>
+                    <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-modal-primary" onclick="crearUsuario()">
+                        <i class="fas fa-save me-2"></i>Guardar Usuario
+                    </button>
                 </div>
             </div>
         </div>
@@ -111,59 +593,80 @@
 
     <!-- Modal Editar Usuario -->
     <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="modalEditarUsuarioLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalEditarUsuarioLabel">Editar Usuario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title"><i class="fas fa-user-edit"></i> Editar Usuario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="formEditarUsuario">
                         <input type="hidden" id="editar_usuario_original" name="usuario_original">
-                        <div class="mb-3">
-                            <label for="editar_usuario" class="form-label">Usuario</label>
-                            <input type="text" class="form-control" id="editar_usuario" name="usuario" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editar_usuario" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" id="editar_usuario" name="usuario" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editar_password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="editar_password" name="password" required>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="editar_password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="editar_password" name="password" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Permisos</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="editar_permiso_login" name="permisos" value="login">
-                                <label class="form-check-label" for="editar_permiso_login">Login</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="editar_permiso_admin_usuarios" name="permisos" value="admin_usuarios">
-                                <label class="form-check-label" for="editar_permiso_admin_usuarios">Admin Usuarios</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="editar_permiso_admin_elastic" name="permisos" value="admin_elastic">
-                                <label class="form-check-label" for="editar_permiso_admin_elastic">Admin Elastic</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="editar_permiso_admin_data_elastic" name="permisos" value="admin_data_elastic">
-                                <label class="form-check-label" for="editar_permiso_admin_data_elastic">Admin Data Elastic</label>
+                        
+                        <label class="form-label">Permisos</label>
+                        <div class="permissions-group">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editar_permiso_login" name="permisos" value="login">
+                                        <label class="form-check-label" for="editar_permiso_login">
+                                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editar_permiso_admin_usuarios" name="permisos" value="admin_usuarios">
+                                        <label class="form-check-label" for="editar_permiso_admin_usuarios">
+                                            <i class="fas fa-users-cog me-2"></i>Admin Usuarios
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editar_permiso_admin_elastic" name="permisos" value="admin_elastic">
+                                        <label class="form-check-label" for="editar_permiso_admin_elastic">
+                                            <i class="fas fa-search me-2"></i>Admin Elastic
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="editar_permiso_admin_data_elastic" name="permisos" value="admin_data_elastic">
+                                        <label class="form-check-label" for="editar_permiso_admin_data_elastic">
+                                            <i class="fas fa-file-upload me-2"></i>Admin Data Elastic
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="actualizarUsuario()">Guardar Cambios</button>
+                    <button type="button" class="btn-modal-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-modal-primary" onclick="actualizarUsuario()">
+                        <i class="fas fa-save me-2"></i>Guardar Cambios
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <footer class="text-center mt-5">
-        <p class="mb-0">Creado por {{ creador }}</p>
-        <p class="mb-0" id="current-year"></p>
-        <p class="mb-0" id="version_app">{{ version }}</p>
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-2">Creado por {{ creador }}</p>
+            <p class="mb-2">&copy; <span id="current-year"></span> BigData-MiProyecto. Todos los derechos reservados.</p>
+            <p class="mb-0" id="version_app">Versión {{ version }}</p>
+        </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq4cvVmFh9vju3MXgpoK" crossorigin="anonymous"></script>
     <script>
         // Inicializar año
         document.getElementById('current-year').textContent = new Date().getFullYear();
@@ -184,34 +687,44 @@
                     tablaUsuarios.innerHTML = '';
                     
                     if (data.length === 0) {
-                        tablaUsuarios.innerHTML = '<tr><td colspan="7" class="text-center">No hay usuarios registrados</td></tr>';
+                        tablaUsuarios.innerHTML = `
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-user-slash fa-3x mb-3 text-muted"></i>
+                                    <h5 class="text-muted">No hay usuarios registrados</h5>
+                                    <p class="text-muted">Crea tu primer usuario usando el botón "Crear Usuario"</p>
+                                </td>
+                            </tr>
+                        `;
                     } else {
                         data.forEach(usuario => {
                             const row = document.createElement('tr');
                             const permisos = usuario.permisos || {};
                             
                             const mostrarPermiso = (valor) => {
-                                if (valor === true || valor === 'true') {
-                                    return '<span class="badge bg-success">Sí</span>';
+                                if (valor === true || valor === 'true' || valor === 1) {
+                                    return '<span class="badge badge-success">Sí</span>';
                                 } else {
-                                    return '<span class="badge bg-secondary">No</span>';
+                                    return '<span class="badge badge-secondary">No</span>';
                                 }
                             };
                             
                             row.innerHTML = `
-                                <td>${usuario.usuario || ''}</td>
-                                <td>${usuario.password || ''}</td>
+                                <td><strong>${usuario.usuario || ''}</strong></td>
+                                <td><code>${usuario.password || ''}</code></td>
                                 <td>${mostrarPermiso(permisos.login)}</td>
                                 <td>${mostrarPermiso(permisos.admin_usuarios)}</td>
                                 <td>${mostrarPermiso(permisos.admin_elastic)}</td>
                                 <td>${mostrarPermiso(permisos.admin_data_elastic)}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-warning me-2" onclick="editarUsuario('${usuario.usuario}')">
-                                        Editar
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="eliminarUsuario('${usuario.usuario}')">
-                                        Eliminar
-                                    </button>
+                                    <div class="action-buttons">
+                                        <button class="btn-edit" onclick="editarUsuario('${usuario.usuario}')">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button class="btn-delete" onclick="eliminarUsuario('${usuario.usuario}')">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </button>
+                                    </div>
                                 </td>
                             `;
                             tablaUsuarios.appendChild(row);
@@ -222,8 +735,19 @@
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al cargar la lista de usuarios');
                     document.getElementById('div_cargando').style.display = 'none';
+                    const tablaUsuarios = document.getElementById('tablaUsuarios');
+                    tablaUsuarios.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                    <h5>Error al cargar usuarios</h5>
+                                    <p>No se pudo cargar la lista de usuarios. Por favor, intente nuevamente.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
                 });
         }
 
@@ -268,14 +792,12 @@
                 document.getElementById('div_cargando').style.display = 'none';
                 
                 if (data.success) {
-                    alert('Usuario creado exitosamente');
                     // Cerrar modal
                     const modalElement = document.getElementById('modalCrearUsuario');
                     const modal = bootstrap.Modal.getInstance(modalElement);
                     if (modal) {
                         modal.hide();
                     } else {
-                        // Si no existe instancia, crear una nueva y ocultar
                         const newModal = new bootstrap.Modal(modalElement);
                         newModal.hide();
                     }
@@ -283,6 +805,9 @@
                     form.reset();
                     // Recargar tabla
                     cargarUsuarios();
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Usuario creado exitosamente');
                 } else {
                     alert('Error al crear usuario: ' + (data.error || 'Error desconocido'));
                 }
@@ -369,19 +894,20 @@
                 document.getElementById('div_cargando').style.display = 'none';
                 
                 if (data.success) {
-                    alert('Usuario actualizado exitosamente');
                     // Cerrar modal
                     const modalElement = document.getElementById('modalEditarUsuario');
                     const modal = bootstrap.Modal.getInstance(modalElement);
                     if (modal) {
                         modal.hide();
                     } else {
-                        // Si no existe instancia, crear una nueva y ocultar
                         const newModal = new bootstrap.Modal(modalElement);
                         newModal.hide();
                     }
                     // Recargar tabla
                     cargarUsuarios();
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Usuario actualizado exitosamente');
                 } else {
                     alert('Error al actualizar usuario: ' + (data.error || 'Error desconocido'));
                 }
@@ -395,7 +921,7 @@
 
         // Función para eliminar usuario
         function eliminarUsuario(usuario) {
-            if (!confirm(`¿Está seguro que desea eliminar al usuario "${usuario}"?`)) {
+            if (!confirm(`¿Está seguro que desea eliminar al usuario "${usuario}"? Esta acción no se puede deshacer.`)) {
                 return;
             }
             
@@ -413,9 +939,11 @@
                 document.getElementById('div_cargando').style.display = 'none';
                 
                 if (data.success) {
-                    alert('Usuario eliminado exitosamente');
                     // Recargar tabla
                     cargarUsuarios();
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Usuario eliminado exitosamente');
                 } else {
                     alert('Error al eliminar usuario: ' + (data.error || 'Error desconocido'));
                 }
@@ -429,4 +957,3 @@
     </script>
 </body>
 </html>
-

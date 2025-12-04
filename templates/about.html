@@ -5,55 +5,418 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acerca de - BigData-MiProyecto</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- Font Awesome para iconos modernos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="{{ url_for('static', filename='css/landingPage.css') }}" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e54c8;
+            --secondary-color: #8f94fb;
+            --accent-color: #00b4d8;
+            --dark-color: #1a1a2e;
+            --light-color: #f8f9fa;
+            --gray-color: #6c757d;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, var(--dark-color) 0%, #16213e 100%);
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header h1 {
+            color: white;
+            font-weight: 700;
+            font-size: 1.8rem;
+            background: linear-gradient(to right, #8f94fb, #4e54c8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem !important;
+            margin: 0 0.2rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .nav-link.active {
+            color: white !important;
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(78, 84, 200, 0.3);
+        }
+        
+        .container {
+            flex: 1;
+        }
+        
+        .hero-section {
+            padding: 3rem 0 2rem;
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 3.2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.4rem;
+            color: var(--gray-color);
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .project-description {
+            background-color: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--accent-color);
+        }
+        
+        .project-description h3 {
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .project-description h3 i {
+            color: var(--accent-color);
+        }
+        
+        .project-description p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #555;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            border-top: 8px solid var(--primary-color);
+            max-width: 700px;
+            margin: 0 auto 4rem;
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .profile-img-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .profile-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 6px solid white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .profile-img-container::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 3px solid var(--secondary-color);
+            top: -16px;
+            left: -16px;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        
+        .profile-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .profile-university {
+            color: var(--gray-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .social-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .social-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            color: white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-github {
+            background: linear-gradient(135deg, #333 0%, #6e5494 100%);
+        }
+        
+        .btn-linkedin {
+            background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
+        }
+        
+        .btn-twitter {
+            background: linear-gradient(135deg, #1da1f2 0%, #1a91da 100%);
+        }
+        
+        .tech-stack {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .tech-stack h5 {
+            color: var(--dark-color);
+            margin-bottom: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .tech-icons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+        
+        .tech-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+        
+        .tech-icon:hover {
+            transform: scale(1.2);
+        }
+        
+        footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: auto;
+        }
+        
+        footer p {
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        #current-year {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        #version_app {
+            background: rgba(255, 255, 255, 0.1);
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+            
+            .profile-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .nav-link {
+                padding: 0.5rem 0.8rem !important;
+                font-size: 0.95rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .project-description {
+                padding: 1.8rem;
+            }
+            
+            .profile-img-container {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .profile-img-container::after {
+                width: 170px;
+                height: 170px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header class="header">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h3 mb-0">BigData-MiProyecto</h1>
+                <h1 class="mb-0"><i class="fas fa-database me-2"></i>BigData-MiProyecto</h1>
                 <nav>
                     <ul class="nav">
-                        <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/buscador">Buscador</a></li>
-                        <li class="nav-item"><a class="nav-link active" href="/about"><b>Acerca de</b></a></li>
-                        <li class="nav-item"><a class="nav-link" href="/login">Ingresar</a></li>                        
+                        <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Inicio</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/buscador"><i class="fas fa-search me-1"></i>Buscador</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="/about"><i class="fas fa-info-circle me-1"></i>Acerca de</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/login"><i class="fas fa-sign-in-alt me-1"></i>Ingresar</a></li>                        
                     </ul>
                 </nav>
             </div>
         </div>
     </header>
 
-    <div class="container">
-        <h1 class="text-center mb-4">BigData-MiProyecto</h1>
-        <h3 class="text-center mb-4">Descripción del Proyecto</h3>
-        <p class="text-center mb-4">Este proyecto es una aplicación web desarrollada para la gestión y análisis de datos utilizando MongoDB. Permite a los usuarios explorar bases de datos, visualizar colecciones y realizar consultas avanzadas sobre grandes volúmenes de información.</p>
+    <main class="container">
+        <div class="hero-section">
+            <h1 class="page-title">Acerca del Proyecto</h1>
+            <p class="page-subtitle">Descubre la tecnología y el equipo detrás de esta innovadora plataforma de análisis de datos</p>
+        </div>
         
-        <div class="row justify-content-center">
-            <div class="col-md-6 text-center">
-                <img src="static/Images/creador.png" alt="Foto del creador" class="profile-img">
-                <h4>XYZ</h4>
-                <p>Estudiante de Maestría en Analítica de Datos</p>
-                <p>Universidad Central</p>
-                
-                <div class="social-links mt-3">
-                    <a href="https://github.com/xyz" target="_blank" class="btn btn-primary">GitHub</a>
-                    <a href="https://linkedin.com/in/xyz" target="_blank" class="btn btn-warning">LinkedIn</a>
-                    <a href="https://twitter.com/xyz" target="_blank"  class="btn btn-success">Twitter</a>
+        <div class="project-description">
+            <h3><i class="fas fa-project-diagram"></i> Descripción del Proyecto</h3>
+            <p>BigData-MiProyecto es una aplicación web avanzada diseñada para la gestión, análisis y visualización de datos a gran escala, implementando técnicas modernas de big data. La plataforma integra procesos de extracción de información mediante web scraping, procesamiento de grandes volúmenes de datos con MongoDB, y visualización interactiva para transformar datos complejos en insights accionables.</p>
+            <p>Este proyecto representa una iniciativa académico-profesional con el objetivo de fortalecer habilidades en el desarrollo de soluciones tecnológicas integrales. Incluye capacidades de procesamiento en tiempo real, herramientas de análisis avanzado y técnicas de extracción automatizada de datos, ofreciendo una experiencia completa en el manejo de tecnologías de vanguardia para el análisis de información.</p>
+        </div>
+        
+        <div class="profile-card">
+            <div class="profile-img-container">
+                <img src="static/Images/creador.jpg" alt="Foto del creador" class="profile-img">
+            </div>
+            
+            <h2 class="profile-name text-center">EDISSON JAIR GONZÁLEZ GONZÁLEZ</h2>
+            <p class="profile-title text-center">Estudiante de Maestría en Analítica de Datos</p>
+            <p class="profile-university text-center">Universidad Central</p>
+            
+            <p class="text-center mb-4" style="color: #666; line-height: 1.6;">Apasionado por la ciencia de datos y el desarrollo de soluciones innovadoras para el análisis de información. Especializado en bases de datos NoSQL, visualización de datos y machine learning.</p>
+            
+            <div class="social-links">
+                <a href="https://github.com/eddy2goUC" target="_blank" class="social-btn btn-github">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/edisson2go/" target="_blank" class="social-btn btn-linkedin">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+            </div>
+            
+            <div class="tech-stack">
+                <h5>Tecnologías Utilizadas</h5>
+                <div class="tech-icons">
+                    <i class="fab fa-python tech-icon" title="Python"></i>
+                    <i class="fab fa-js-square tech-icon" title="JavaScript"></i>
+                    <i class="fas fa-database tech-icon" title="MongoDB"></i>
+                    <i class="fab fa-bootstrap tech-icon" title="Bootstrap"></i>
+                    <i class="fab fa-html5 tech-icon" title="HTML5"></i>
+                    <i class="fab fa-css3-alt tech-icon" title="CSS3"></i>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <footer class="text-center">
-        <p class="mb-0">Creado por {{ creador }}</p>
-        <p class="mb-0" id="current-year"></p>
-        <p class="mb-0" id="version_app">{{ version }}</p>
+        <div class="container">
+            <p class="mb-2">Creado por {{ creador }}</p>
+            <p class="mb-2">&copy; <span id="current-year"></span> BigData-MiProyecto. Todos los derechos reservados.</p>
+            <p class="mb-0" id="version_app">Versión {{ version }}</p>
+        </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq4cvVmFh9vju3MXgpoK" crossorigin="anonymous"></script>
     <script>
         document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Efecto de aparición suave para elementos al hacer scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animated');
+                    }
+                });
+            }, observerOptions);
+            
+            // Observar elementos para animación
+            const elementsToAnimate = document.querySelectorAll('.project-description, .profile-card');
+            elementsToAnimate.forEach(el => {
+                observer.observe(el);
+            });
+        });
     </script>
 </body>
-</html> 
+</html>

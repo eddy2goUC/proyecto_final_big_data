@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import json
 from urllib.parse import urljoin
 import os
+import re
 from typing import List, Dict
 from Helpers import Funciones
 
@@ -10,7 +11,7 @@ from Helpers import Funciones
 class WebScraping:
     """Clase para realizar web scraping y extracción de enlaces"""
     
-    def __init__(self, dominio_base: str = "https://www.minsalud.gov.co/Normativa/"):
+    def __init__(self, dominio_base: str = "https://infolibros.org/libros-pdf-gratis/negocios/economia/"):
         """
         Inicializa la clase WebScraping
         
@@ -25,54 +26,99 @@ class WebScraping:
     
     def extract_links(self, url: str, listado_extensiones: List[str] = None) -> List[Dict]:
         """
-        Extrae links internos según listado de extensiones que puede ser "PDF, ASPX, PHP"
+        Extrae links de libros según listado de extensiones (PDF)
         
         Args:
             url: URL de la página a analizar
-            listado_extensiones: Lista de extensiones a filtrar (ej: ['pdf', 'aspx', 'php'])
+            listado_extensiones: Lista de extensiones a filtrar (ej: ['pdf'])
             
         Returns:
-            Lista de diccionarios con 'url' y 'type' de cada enlace encontrado
+            Lista de diccionarios con 'url', 'type' y 'title' de cada enlace encontrado
         """
         print(f"Extrayendo links de: {url}")
 
         if listado_extensiones is None:
-            listado_extensiones = ['pdf', 'aspx']
+            listado_extensiones = ['pdf']
         
         try:
             response = self.session.get(url, timeout=30)
-            response.raise_for_status()  # Raise an exception for bad status codes
+            response.raise_for_status()
             
-            soup = BeautifulSoup(response.content, 'lxml')
-            container_div = soup.find('div', class_='containerblanco')
-
+            soup = BeautifulSoup(response.content, 'html.parser')
             links = []
-            if container_div:
-                for link in container_div.find_all('a'):
+            
+            # Buscar todos los contenedores de libros
+            book_containers = soup.find_all('div', class_='caja-pdfs')
+            
+            if not book_containers:
+                # Intentar otro selector común
+                book_containers = soup.find_all('div', class_=re.compile(r'caja|libro|book'))
+            
+            print(f"Encontrados {len(book_containers)} contenedores de libros")
+            
+            for container in book_containers:
+                try:
+                    # Extraer título del libro
+                    title_elem = container.find(['h2', 'h3', 'h4', 'strong', 'b'])
+                    if title_elem:
+                        # Limpiar el título (eliminar números como #1, #2, etc.)
+                        title = re.sub(r'^#\d+\s*', '', title_elem.get_text(strip=True))
+                    else:
+                        # Si no encuentra título, usar el primer texto del contenedor
+                        title = container.get_text(strip=True).split('\n')[0]
+                        title = re.sub(r'^#\d+\s*', '', title)
+                    
+                    # Buscar enlace de descarga
+                    download_link = container.find('a', string=re.compile(r'descargar', re.IGNORECASE))
+                    
+                    if not download_link:
+                        # Buscar cualquier enlace que contenga .pdf
+                        download_link = container.find('a', href=re.compile(r'\.pdf$', re.IGNORECASE))
+                    
+                    if download_link and download_link.get('href'):
+                        href = download_link['href']
+                        full_url = urljoin(url, href)
+                        
+                        # Verificar si es un PDF (por extensión o por patrón en la URL)
+                        for ext in listado_extensiones:
+                            if full_url.lower().endswith(f'.{ext.lower()}'):
+                                links.append({
+                                    'url': full_url,
+                                    'type': ext.lower(),
+                                    'title': title[:200]  # Limitar longitud del título
+                                })
+                                break
+                        else:
+                            # Si no termina en .pdf pero parece un enlace de descarga
+                            if 'pdf' in full_url.lower() or 'dropbox' in full_url.lower():
+                                links.append({
+                                    'url': full_url,
+                                    'type': 'pdf',
+                                    'title': title[:200]
+                                })
+                
+                except Exception as e:
+                    print(f"Error procesando contenedor: {e}")
+                    continue
+            
+            # Si no encontramos contenedores, buscar enlaces PDF directamente
+            if not links:
+                all_links = soup.find_all('a', href=True)
+                for link in all_links:
                     href = link.get('href')
                     if href:
                         full_url = urljoin(url, href)
-                        # Verificar extensión
                         for ext in listado_extensiones:
-                            ext_lower = ext.lower().strip()
-                            if full_url.lower().endswith(f'.{ext_lower}'):
-                                print(f"Agregando link: {full_url} de tipo [{ext_lower}]")
+                            if full_url.lower().endswith(f'.{ext.lower()}'):
+                                title = link.get_text(strip=True) or f"PDF_{len(links)+1}"
                                 links.append({
                                     'url': full_url,
-                                    'type': ext_lower
+                                    'type': ext.lower(),
+                                    'title': title[:200]
                                 })
-                                break  # Solo agregar una vez
-                        # Check if the link is within the specified domain
-                        if full_url.startswith(self.dominio_base):
-                            # Verificar extensión
-                            for ext in listado_extensiones:
-                                ext_lower = ext.lower().strip()
-                                if full_url.lower().endswith(f'.{ext_lower}'):
-                                    links.append({
-                                        'url': full_url,
-                                        'type': ext_lower
-                                    })
-                                    break  # Solo agregar una vez
+                                break
+            
+            print(f"Se encontraron {len(links)} enlaces PDF")
             return links
             
         except requests.exceptions.RequestException as e:
@@ -86,19 +132,19 @@ class WebScraping:
                                 listado_extensiones: List[str] = None,
                                 max_iteraciones: int = 100) -> Dict:
         """
-        Extrae todos los links de forma recursiva desde una URL inicial
+        Extrae todos los links de libros desde una URL inicial
         
         Args:
             url_inicial: URL inicial para comenzar la extracción
             json_file_path: Ruta del archivo JSON para guardar/cargar links
             listado_extensiones: Lista de extensiones a filtrar
-            max_iteraciones: Número máximo de iteraciones para evitar loops infinitos
+            max_iteraciones: Número máximo de iteraciones (no se usa mucho aquí, pero se mantiene)
             
         Returns:
             Diccionario con el resultado de la extracción
         """
         if listado_extensiones is None:
-            listado_extensiones = ['pdf', 'aspx']
+            listado_extensiones = ['pdf']
         
         # Cargar links existentes del archivo JSON
         all_links = self._cargar_links_desde_json(json_file_path)
@@ -107,44 +153,6 @@ class WebScraping:
         if not all_links:
             print(f"Extrayendo links de la URL inicial: {url_inicial}")
             all_links = self.extract_links(url_inicial, listado_extensiones)
-        
-        # Filtrar links para que solo estén en el dominio especificado
-        all_links = [link for link in all_links if link['url'].startswith(self.dominio_base)]
-        
-        # Obtener links ASPX para visitar
-        aspx_links_to_visit = [
-            link['url'] for link in all_links 
-            if link['type'] == 'aspx' and link['url'].startswith(self.dominio_base)
-        ]
-        
-        visited_aspx_links = set()
-        iteraciones = 0
-        
-        # Recorrer links ASPX
-        while aspx_links_to_visit and iteraciones < max_iteraciones:
-            iteraciones += 1
-            current_aspx_url = aspx_links_to_visit.pop(0)
-            
-            if current_aspx_url not in visited_aspx_links:
-                visited_aspx_links.add(current_aspx_url)
-                print(f"Iteración {iteraciones}: Visitando: {current_aspx_url}")
-                
-                new_links = self.extract_links(current_aspx_url, listado_extensiones)
-                
-                for link in new_links:
-                    # Verificar si el link no está ya en la lista
-                    if not any(existing_link['url'] == link['url'] for existing_link in all_links):
-                        all_links.append(link)
-                        
-                        # Si es ASPX, agregarlo a la cola de visitas
-                        if link['type'] == 'aspx' and link['url'] not in visited_aspx_links:
-                            aspx_links_to_visit.append(link['url'])
-        
-        if iteraciones >= max_iteraciones:
-            print(f"Advertencia: Se alcanzó el máximo de {max_iteraciones} iteraciones")
-        
-        # Filtrar nuevamente para asegurar que todos están en el dominio
-        all_links = [link for link in all_links if link['url'].startswith(self.dominio_base)]
         
         # Guardar en JSON
         json_output = {"links": all_links}
@@ -156,7 +164,7 @@ class WebScraping:
             'success': True,
             'total_links': len(all_links),
             'links': all_links,
-            'iteraciones': iteraciones
+            'iteraciones': 1  # Solo una iteración para esta página
         }
     
     def _cargar_links_desde_json(self, json_file_path: str) -> List[Dict]:
@@ -229,17 +237,13 @@ class WebScraping:
             
             for i, link in enumerate(pdf_links, 1):
                 pdf_url = link['url']
+                title = link.get('title', f'libro_{i}')
+                
                 try:
-                    # Obtener nombre del archivo desde la URL
-                    nombre_archivo = os.path.basename(pdf_url.split('?')[0])  # Remover query params
-                    
-                    # Si no tiene extensión .pdf, agregarla
-                    if not nombre_archivo.lower().endswith('.pdf'):
-                        nombre_archivo += '.pdf'
-                    
-                    # Limpiar nombre de archivo (remover caracteres especiales)
-                    from werkzeug.utils import secure_filename
-                    nombre_archivo = secure_filename(nombre_archivo)
+                    # Crear nombre de archivo seguro a partir del título
+                    safe_title = re.sub(r'[^\w\s-]', '', title)
+                    safe_title = re.sub(r'[-\s]+', '_', safe_title)
+                    nombre_archivo = f"{i:03d}_{safe_title[:50]}.pdf"
                     
                     # Si el nombre está vacío, generar uno
                     if not nombre_archivo or nombre_archivo == '.pdf':
@@ -248,8 +252,25 @@ class WebScraping:
                     ruta_archivo = os.path.join(carpeta_destino, nombre_archivo)
                     
                     # Descargar archivo
-                    print(f"Descargando [{i}/{len(pdf_links)}]: {nombre_archivo}")
-                    response = self.session.get(pdf_url, stream=True, timeout=60)
+                    print(f"Descargando [{i}/{len(pdf_links)}]: {title[:50]}...")
+                    
+                    # Para enlaces de Dropbox, asegurar que sea enlace de descarga directa
+                    if 'dropbox.com' in pdf_url or 'dropboxusercontent.com' in pdf_url:
+                        if 'dl=0' in pdf_url:
+                            pdf_url = pdf_url.replace('dl=0', 'dl=1')
+                        elif '?' not in pdf_url:
+                            pdf_url = pdf_url + '?dl=1'
+                        elif '?' in pdf_url and 'dl=' not in pdf_url:
+                            pdf_url = pdf_url + '&dl=1'
+                    
+                    # Headers para simular navegador
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept': 'application/pdf, */*',
+                        'Referer': 'https://infolibros.org/'
+                    }
+                    
+                    response = self.session.get(pdf_url, headers=headers, stream=True, timeout=60)
                     response.raise_for_status()
                     
                     # Guardar archivo
@@ -258,7 +279,20 @@ class WebScraping:
                             if chunk:
                                 f.write(chunk)
                     
-                    descargados += 1
+                    # Verificar que el archivo no esté vacío
+                    if os.path.getsize(ruta_archivo) > 0:
+                        file_size = os.path.getsize(ruta_archivo) / (1024 * 1024)  # MB
+                        print(f"  ✓ Descargado ({file_size:.2f} MB)")
+                        descargados += 1
+                    else:
+                        print(f"  ✗ Archivo vacío")
+                        errores += 1
+                        archivos_errores.append({
+                            'url': pdf_url,
+                            'error': 'Archivo descargado vacío'
+                        })
+                        # Eliminar archivo vacío
+                        os.remove(ruta_archivo)
                     
                 except Exception as e:
                     errores += 1

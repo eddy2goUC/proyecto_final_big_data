@@ -18,19 +18,12 @@ class MongoDB:
             return False
     
     def validar_usuario(self, usuario: str, password: str, coleccion: str) -> Optional[Dict]:
-        """Valida usuario y contraseña con MD5"""
-        try:
-            
-            #password_md5 = hashlib.md5(password.encode()).hexdigest()
-            password_md5 =password  # Deshabilitado MD5 para pruebas
-            user = self.db[coleccion].find_one({
-                'usuario': usuario,
-                'password': password_md5
-            })
+        col = self.db[coleccion]
+        # Buscar el usuario por nombre
+        user = col.find_one({"usuario": usuario})
+        if user and user.get("password") == password:
             return user
-        except Exception as e:
-            print(f"Error al validar usuario: {e}")
-            return None
+        return None
     
     def obtener_usuario(self, usuario: str, coleccion: str) -> Optional[Dict]:
         """Obtiene información de un usuario"""

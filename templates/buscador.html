@@ -3,59 +3,490 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador - BigData</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <title>Buscador - BigData-MiProyecto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="{{ url_for('static', filename='css/landingPage.css') }}" rel="stylesheet">
     <style>
-        .resultados-container {
-            margin-top: 2rem;
+        :root {
+            --primary-color: #4e54c8;
+            --secondary-color: #8f94fb;
+            --accent-color: #00b4d8;
+            --dark-color: #1a1a2e;
+            --light-color: #f8f9fa;
+            --gray-color: #6c757d;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
         }
-        .aggs-list {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 0.25rem;
-            padding: 1rem;
-            max-height: 600px;
-            overflow-y: auto;
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .aggs-item {
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #dee2e6;
+        
+        .header {
+            background: linear-gradient(90deg, var(--dark-color) 0%, #16213e 100%);
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-        .aggs-item:last-child {
+        
+        .header h1 {
+            color: white;
+            font-weight: 700;
+            font-size: 1.8rem;
+            background: linear-gradient(to right, #8f94fb, #4e54c8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem !important;
+            margin: 0 0.2rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .nav-link.active {
+            color: white !important;
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(78, 84, 200, 0.3);
+        }
+        
+        .main-container {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        .page-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--gray-color);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .search-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--accent-color);
+        }
+        
+        .search-card h3 {
+            color: var(--dark-color);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .search-card h3 i {
+            color: var(--accent-color);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e1e5eb;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(78, 84, 200, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(78, 84, 200, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(78, 84, 200, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+        
+        .loading-container {
+            background: white;
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(78, 84, 200, 0.2);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .results-header {
+            background: linear-gradient(90deg, var(--dark-color) 0%, #16213e 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+        }
+        
+        .results-header h5 {
+            margin: 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .results-header h5 i {
+            color: var(--secondary-color);
+        }
+        
+        .results-count {
+            background: linear-gradient(135deg, var(--accent-color) 0%, #0096c7 100%);
+            color: white;
+            padding: 0.25rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .results-body {
+            padding: 1.5rem;
+        }
+        
+        .aggs-panel {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: 100%;
+            border: 1px solid #e9ecef;
+        }
+        
+        .aggs-title {
+            color: var(--dark-color);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .aggs-title i {
+            color: var(--accent-color);
+        }
+        
+        .agg-item {
+            margin-bottom: 1.25rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .agg-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
             border-bottom: none;
         }
-        .aggs-item h6 {
-            color: #495057;
+        
+        .agg-item h6 {
+            color: var(--dark-color);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+        
+        .agg-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .agg-list li {
+            padding: 0.5rem 0.75rem;
             margin-bottom: 0.5rem;
+            background: white;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
         }
-        .aggs-item ul {
-            list-style-type: none;
-            padding-left: 0;
+        
+        .agg-list li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
         }
-        .aggs-item li {
-            padding: 0.25rem 0;
-            font-size: 0.9rem;
+        
+        .agg-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
-        .aggs-item .badge {
-            margin-left: 0.5rem;
-        }
-        .tabla-resultados {
+        
+        .table-container {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e9ecef;
             max-height: 600px;
             overflow-y: auto;
         }
-        .json-view {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 0.25rem;
-            padding: 0.5rem;
+        
+        .table {
+            margin: 0;
+        }
+        
+        .table thead th {
+            background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+            color: var(--dark-color);
+            font-weight: 600;
+            border: none;
+            padding: 1rem 1.25rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(78, 84, 200, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .table tbody td {
+            padding: 1rem 1.25rem;
+            vertical-align: middle;
+            border-color: #e9ecef;
+        }
+        
+        .score-badge {
+            background: linear-gradient(135deg, var(--success-color) 0%, #20c997 100%);
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .index-badge {
+            background: linear-gradient(135deg, var(--warning-color) 0%, #fd7e14 100%);
+            color: #212529;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .content-preview {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border-left: 3px solid var(--accent-color);
+            max-height: 120px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .content-preview::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to bottom, transparent, #f8f9fa);
+        }
+        
+        .view-detail-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-weight: 600;
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .view-detail-btn:hover {
+            color: var(--accent-color);
+            transform: translateX(5px);
+        }
+        
+        .error-alert {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 5px solid #dc3545;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+        }
+        
+        footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: auto;
+        }
+        
+        footer p {
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        #current-year {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        #version_app {
+            background: rgba(255, 255, 255, 0.1);
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .modal-content {
+            border-radius: 16px;
+            overflow: hidden;
+            border: none;
+        }
+        
+        .modal-header {
+            background: linear-gradient(90deg, var(--dark-color) 0%, #16213e 100%);
+            color: white;
+            border-bottom: none;
+            padding: 1.5rem 2rem;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+        }
+        
+        .modal-body {
+            padding: 1.5rem 2rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .json-viewer {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
             font-family: 'Courier New', monospace;
-            font-size: 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
             white-space: pre-wrap;
             word-wrap: break-word;
-            max-height: 200px;
-            overflow-y: auto;
+            border: 1px solid #e9ecef;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2.2rem;
+            }
+            
+            .search-card {
+                padding: 1.5rem;
+            }
+            
+            .results-body {
+                padding: 1rem;
+            }
+            
+            .table thead th, .table tbody td {
+                padding: 0.75rem 0.5rem;
+            }
+            
+            .nav-link {
+                padding: 0.5rem 0.8rem !important;
+                font-size: 0.95rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .search-card {
+                padding: 1.25rem;
+            }
+            
+            .btn-primary {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -63,90 +494,89 @@
     <header class="header">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h3 mb-0">BigData-MiProyecto</h1>
+                <h1 class="mb-0"><i class="fas fa-database me-2"></i>BigData-MiProyecto</h1>
                 <nav>
                     <ul class="nav">
-                        <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
-                        <li class="nav-item"><a class="nav-link active" href="/buscador"><b>Buscador</b></a></li>
-                        <li class="nav-item"><a class="nav-link" href="/about">Acerca de</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/login">Ingresar</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Inicio</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="/buscador"><i class="fas fa-search me-1"></i>Buscador</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/about"><i class="fas fa-info-circle me-1"></i>Acerca de</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/login"><i class="fas fa-sign-in-alt me-1"></i>Ingresar</a></li>
                     </ul>
                 </nav>
             </div>
         </div>
     </header>
 
-    <div class="container mt-4">
-        <h1 class="text-center mb-4">Buscador de documentos</h1>
-        
-        <!-- Formulario de búsqueda -->
-        <div class="card mb-4">
-            <div class="card-body">
+    <main class="main-container">
+        <div class="container">
+            <h1 class="page-title">Buscador Avanzado</h1>
+            <p class="page-subtitle">Busca y analiza documentos en tiempo real con Elasticsearch</p>
+            
+            <!-- Formulario de búsqueda -->
+            <div class="search-card">
+                <h3><i class="fas fa-search"></i> Realizar Búsqueda</h3>
                 <form id="formBuscar" onsubmit="buscar(event)">
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-10">
-                            <label for="textoBuscar" class="form-label">Texto a buscar</label>
-                            <input type="text" class="form-control" id="textoBuscar" name="texto" 
-                                   placeholder="Ingrese el texto que desea buscar..." required>
+                        <div class="col-md-9">
+                            <label for="textoBuscar" class="form-label">Término de búsqueda</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-keyboard"></i></span>
+                                <input type="text" class="form-control" id="textoBuscar" name="texto" 
+                                       placeholder="Ingresa palabras clave, frases o términos específicos..." 
+                                       required>
+                            </div>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <button type="submit" class="btn btn-primary w-100">
-                                <i class="bi bi-search"></i> Buscar
+                                <i class="fas fa-search me-2"></i> Buscar
                             </button>
                         </div>
                     </div>
                 </form>
             </div>
-        </div>
 
-        <!-- Mensaje de carga -->
-        <div id="div_cargando" class="text-center mt-4" style="display: none;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Buscando...</span>
+            <!-- Mensaje de carga -->
+            <div id="div_cargando" class="loading-container" style="display: none;">
+                <div class="spinner"></div>
+                <h4 class="mb-3">Procesando búsqueda...</h4>
+                <p class="text-muted">Estamos analizando los documentos en nuestra base de datos. Esto puede tomar unos segundos.</p>
             </div>
-            <p class="mt-2">Buscando documentos... Por favor espere.</p>
-        </div>
 
-        <!-- Resultados -->
-        <div id="divResultados" class="resultados-container" style="display: none;">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Resultados de la búsqueda - Total encontrado: <span id="totalResultados">0</span></h5>
+            <!-- Resultados -->
+            <div id="divResultados" class="results-card" style="display: none;">
+                <div class="results-header">
+                    <h5>
+                        <i class="fas fa-chart-bar"></i> Resultados de la Búsqueda
+                        <span class="results-count" id="totalResultados">0</span>
+                    </h5>
                 </div>
-                <div class="card-body">
+                <div class="results-body">
                     <div class="row">
-                        <!-- Columna 1: Aggregations (20%) -->
-                        <div class="col-md-3">
-                            <div class="aggs-list">
-<<<<<<< HEAD
-                                <h6 class="mb-3">Filtros</h6>
-=======
-                                <h6 class="mb-3">Agregaciones</h6>
->>>>>>> origin/main
+                        <!-- Columna 1: Aggregations (25%) -->
+                        <div class="col-lg-3">
+                            <div class="aggs-panel">
+                                <h5 class="aggs-title"><i class="fas fa-filter"></i> Filtros & Agregaciones</h5>
                                 <div id="divAggregations">
                                     <!-- Las aggregations se mostrarán aquí -->
+                                    <div class="text-center text-muted py-4">
+                                        <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                                        <p>Realiza una búsqueda para ver las agregaciones</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Columna 2: Tabla de resultados (80%) -->
-                        <div class="col-md-9">
-                            <div class="tabla-resultados">
-                                <table class="table table-striped table-bordered table-hover">
-                                    <thead class="table-dark">
+                        <!-- Columna 2: Tabla de resultados (75%) -->
+                        <div class="col-lg-9">
+                            <div class="table-container">
+                                <table class="table table-hover">
+                                    <thead>
                                         <tr>
                                             <th style="width: 5%;">#</th>
-<<<<<<< HEAD
-                                            <th style="width: 10%;">Id</th>
-                                            <th style="width: 10%;">Score</th>
-                                            <th style="width: 10%;">Index</th>
-                                            <th style="width: 75%;">Contenido</th>
-=======
                                             <th style="width: 10%;">ID</th>
                                             <th style="width: 10%;">Score</th>
                                             <th style="width: 15%;">Índice</th>
                                             <th style="width: 60%;">Contenido</th>
->>>>>>> origin/main
                                         </tr>
                                     </thead>
                                     <tbody id="tablaResultados">
@@ -158,25 +588,49 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Mensaje de error -->
-        <div id="divError" class="alert alert-danger mt-4" style="display: none;" role="alert">
-            <strong>Error:</strong> <span id="mensajeError"></span>
+            <!-- Mensaje de error -->
+            <div id="divError" class="error-alert" style="display: none;" role="alert">
+                <h5 class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Error en la búsqueda</h5>
+                <p class="mb-0" id="mensajeError">Ha ocurrido un error al procesar tu solicitud.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-2">Creado por {{ creador }}</p>
+            <p class="mb-2">&copy; <span id="current-year"></span> BigData-MiProyecto. Todos los derechos reservados.</p>
+            <p class="mb-0" id="version_app">Versión {{ version }}</p>
+        </div>
+    </footer>
+
+    <!-- Modal para mostrar detalle completo -->
+    <div class="modal fade" id="modalDetalle" tabindex="-1" aria-labelledby="modalDetalleLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>Detalle del Documento</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalDetalleBody">
+                    <!-- El contenido se mostrará aquí -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <footer class="text-center mt-5">
-        <p class="mb-0">Creado por {{ creador }}</p>
-        <p class="mb-0" id="current-year"></p>
-        <p class="mb-0" id="version_app">{{ version }}</p>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq4cvVmFh9vju3MXgpoK" crossorigin="anonymous"></script>
     <script>
+        // Variable global para almacenar última búsqueda
+        let ultimaBusqueda = [];
+        
         // Inicializar año
         document.getElementById('current-year').textContent = new Date().getFullYear();
-
+        
         // Función para buscar
         function buscar(event) {
             event.preventDefault();
@@ -184,7 +638,7 @@
             const textoBuscar = document.getElementById('textoBuscar').value.trim();
             
             if (!textoBuscar) {
-                alert('Por favor, ingrese un texto para buscar');
+                mostrarError('Por favor, ingrese un texto para buscar');
                 return;
             }
             
@@ -217,10 +671,10 @@
             .catch(error => {
                 console.error('Error:', error);
                 document.getElementById('div_cargando').style.display = 'none';
-                mostrarError('Error al realizar la búsqueda');
+                mostrarError('Error al realizar la búsqueda. Verifica tu conexión e intenta nuevamente.');
             });
         }
-
+        
         // Función para mostrar resultados
         function mostrarResultados(data) {
             // Mostrar total
@@ -229,221 +683,225 @@
             // Mostrar aggregations
             mostrarAggregations(data.aggs || {});
             
-<<<<<<< HEAD
-            // Mostrar hits-resultados
-            mostrarHits(data.resultados || []);
-=======
             // Mostrar hits
-            mostrarHits(data.hits || []);
->>>>>>> origin/main
+            mostrarHits(data.hits || data.resultados || []);
             
             // Mostrar div de resultados
             document.getElementById('divResultados').style.display = 'block';
+            
+            // Efecto de aparición
+            const resultadosDiv = document.getElementById('divResultados');
+            resultadosDiv.style.opacity = '0';
+            resultadosDiv.style.transform = 'translateY(20px)';
+            resultadosDiv.style.transition = 'all 0.5s ease';
+            
+            setTimeout(() => {
+                resultadosDiv.style.opacity = '1';
+                resultadosDiv.style.transform = 'translateY(0)';
+            }, 50);
         }
-
+        
         // Función para mostrar aggregations
         function mostrarAggregations(aggs) {
             const divAggregations = document.getElementById('divAggregations');
-            divAggregations.innerHTML = '';
             
             if (!aggs || Object.keys(aggs).length === 0) {
-                divAggregations.innerHTML = '<p class="text-muted">No hay agregaciones disponibles</p>';
+                divAggregations.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                        <p>No hay agregaciones disponibles</p>
+                    </div>
+                `;
                 return;
             }
             
+            let html = '';
+            
             // Procesar cuentos_por_mes
             if (aggs.cuentos_por_mes && aggs.cuentos_por_mes.buckets) {
-                const divMes = document.createElement('div');
-                divMes.className = 'aggs-item';
-                divMes.innerHTML = '<h6>Cuentos por Mes</h6><ul id="listCuentosPorMes"></ul>';
-                divAggregations.appendChild(divMes);
+                html += `
+                    <div class="agg-item">
+                        <h6><i class="fas fa-calendar-alt me-2"></i>Cuentos por Mes</h6>
+                        <ul class="agg-list">
+                `;
                 
-                const listMes = document.getElementById('listCuentosPorMes');
                 aggs.cuentos_por_mes.buckets.forEach(bucket => {
-                    const li = document.createElement('li');
-                    const fecha = new Date(bucket.key_as_string || bucket.key).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' });
-                    li.innerHTML = `${fecha} <span class="badge bg-primary">${bucket.doc_count}</span>`;
-                    listMes.appendChild(li);
+                    const fecha = new Date(bucket.key_as_string || bucket.key).toLocaleDateString('es-ES', { 
+                        year: 'numeric', 
+                        month: 'long' 
+                    });
+                    html += `
+                        <li>
+                            <span>${fecha}</span>
+                            <span class="agg-count">${bucket.doc_count}</span>
+                        </li>
+                    `;
                 });
+                
+                html += `
+                        </ul>
+                    </div>
+                `;
             }
             
             // Procesar cuentos_por_autor
             if (aggs.cuentos_por_autor && aggs.cuentos_por_autor.buckets) {
-                const divAutor = document.createElement('div');
-                divAutor.className = 'aggs-item';
-                divAutor.innerHTML = '<h6>Cuentos por Autor</h6><ul id="listCuentosPorAutor"></ul>';
-                divAggregations.appendChild(divAutor);
+                html += `
+                    <div class="agg-item">
+                        <h6><i class="fas fa-user-edit me-2"></i>Cuentos por Autor</h6>
+                        <ul class="agg-list">
+                `;
                 
-                const listAutor = document.getElementById('listCuentosPorAutor');
                 aggs.cuentos_por_autor.buckets.forEach(bucket => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `${bucket.key} <span class="badge bg-success">${bucket.doc_count}</span>`;
-                    listAutor.appendChild(li);
+                    html += `
+                        <li>
+                            <span>${bucket.key || 'Sin autor'}</span>
+                            <span class="agg-count">${bucket.doc_count}</span>
+                        </li>
+                    `;
+                });
+                
+                html += `
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            // Agregaciones genéricas si no hay específicas
+            if (html === '') {
+                Object.keys(aggs).forEach(key => {
+                    if (aggs[key].buckets) {
+                        html += `
+                            <div class="agg-item">
+                                <h6><i class="fas fa-list-ul me-2"></i>${key.replace(/_/g, ' ').toUpperCase()}</h6>
+                                <ul class="agg-list">
+                        `;
+                        
+                        aggs[key].buckets.slice(0, 10).forEach(bucket => {
+                            html += `
+                                <li>
+                                    <span>${bucket.key || 'N/A'}</span>
+                                    <span class="agg-count">${bucket.doc_count}</span>
+                                </li>
+                            `;
+                        });
+                        
+                        html += `
+                                </ul>
+                            </div>
+                        `;
+                    }
                 });
             }
+            
+            divAggregations.innerHTML = html;
         }
-
+        
         // Función para mostrar hits
-<<<<<<< HEAD
-        function mostrarHits(resultados) {
-            console.log(resultados);
-            const tablaResultados = document.getElementById('tablaResultados');
-            tablaResultados.innerHTML = '';
-            
-            if (resultados.length === 0) {
-                tablaResultados.innerHTML = '<tr><td colspan="5" class="text-center">¡No se encontraron resultados!</td></tr>';
-                return;
-            }
-            
-            resultados.forEach((resultado, index) => {
-                const row = document.createElement('tr');
-                const source = resultado._source || {};
-=======
         function mostrarHits(hits) {
-            const tablaResultados = document.getElementById('tablaResultados');
-            tablaResultados.innerHTML = '';
+            // Guardar para usar en detalles
+            ultimaBusqueda = hits;
             
-            if (hits.length === 0) {
-                tablaResultados.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron resultados</td></tr>';
+            const tablaResultados = document.getElementById('tablaResultados');
+            
+            if (!hits || hits.length === 0) {
+                tablaResultados.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
+                            <h5 class="text-muted">¡No se encontraron resultados!</h5>
+                            <p class="text-muted">Intenta con otros términos de búsqueda</p>
+                        </td>
+                    </tr>
+                `;
                 return;
             }
+            
+            let html = '';
             
             hits.forEach((hit, index) => {
-                const row = document.createElement('tr');
                 const source = hit._source || {};
->>>>>>> origin/main
+                const id = hit._id || 'N/A';
+                const score = hit._score ? hit._score.toFixed(4) : 'N/A';
+                const indexName = hit._index || 'N/A';
                 
-                // Crear vista del contenido (primeros 200 caracteres)
+                // Crear vista del contenido
                 let contenidoVista = '';
                 if (source.contenido) {
-                    contenidoVista = source.contenido.substring(0, 200);
-                    if (source.contenido.length > 200) {
-                        contenidoVista += '...';
-                    }
+                    contenidoVista = source.contenido.substring(0, 150);
+                    if (source.contenido.length > 150) contenidoVista += '...';
                 } else if (source.texto) {
-                    contenidoVista = source.texto.substring(0, 200);
-                    if (source.texto.length > 200) {
-                        contenidoVista += '...';
-                    }
+                    contenidoVista = source.texto.substring(0, 150);
+                    if (source.texto.length > 150) contenidoVista += '...';
                 } else {
-                    contenidoVista = JSON.stringify(source, null, 2).substring(0, 200);
+                    const sourceStr = JSON.stringify(source, null, 2);
+                    contenidoVista = sourceStr.substring(0, 150);
+                    if (sourceStr.length > 150) contenidoVista += '...';
                 }
                 
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${hit._id || ''}</td>
-                    <td>${hit._score ? hit._score.toFixed(4) : 'N/A'}</td>
-                    <td><small>${hit._index || ''}</small></td>
-                    <td>
-                        <div class="json-view">${contenidoVista}</div>
-                        <button class="btn btn-sm btn-link mt-1" onclick="mostrarDetalle(${index})" data-bs-toggle="modal" data-bs-target="#modalDetalle">
-                            Ver completo
-                        </button>
-                        <div class="detalle-completo" style="display: none;">
-                            ${JSON.stringify(source, null, 2)}
-                        </div>
-                    </td>
+                html += `
+                    <tr>
+                        <td><strong>${index + 1}</strong></td>
+                        <td><small class="text-muted">${id}</small></td>
+                        <td><span class="score-badge">${score}</span></td>
+                        <td><span class="index-badge">${indexName}</span></td>
+                        <td>
+                            <div class="content-preview">${contenidoVista}</div>
+                            <button class="view-detail-btn" onclick="mostrarDetalle(${index})" data-bs-toggle="modal" data-bs-target="#modalDetalle">
+                                <i class="fas fa-external-link-alt me-1"></i> Ver documento completo
+                            </button>
+                        </td>
+                    </tr>
                 `;
-                tablaResultados.appendChild(row);
             });
+            
+            tablaResultados.innerHTML = html;
         }
-
-        // Función para mostrar error
-        function mostrarError(mensaje) {
-            document.getElementById('mensajeError').textContent = mensaje;
-            document.getElementById('divError').style.display = 'block';
-        }
-
-        // Variable global para almacenar última búsqueda
-        let ultimaBusqueda = [];
-
+        
         // Función para mostrar detalle completo
         function mostrarDetalle(index) {
             if (ultimaBusqueda[index]) {
                 const source = ultimaBusqueda[index]._source || {};
                 const modalBody = document.getElementById('modalDetalleBody');
                 if (modalBody) {
-                    modalBody.innerHTML = '<pre class="json-view" style="max-height: 500px; overflow-y: auto;">' + JSON.stringify(source, null, 2) + '</pre>';
+                    modalBody.innerHTML = `
+                        <div class="mb-3">
+                            <h6><i class="fas fa-info-circle me-2"></i>Información del Documento</h6>
+                            <div class="d-flex gap-3 mb-3">
+                                <span class="badge bg-primary">ID: ${ultimaBusqueda[index]._id || 'N/A'}</span>
+                                <span class="badge bg-success">Score: ${ultimaBusqueda[index]._score ? ultimaBusqueda[index]._score.toFixed(4) : 'N/A'}</span>
+                                <span class="badge bg-warning text-dark">Índice: ${ultimaBusqueda[index]._index || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <div class="json-viewer">${JSON.stringify(source, null, 2)}</div>
+                    `;
                 }
             }
         }
-
-        // Actualizar función mostrarHits para guardar datos
-        function mostrarHitsOriginal(hits) {
-            // Guardar para usar en detalles
-            ultimaBusqueda = hits;
+        
+        // Función para mostrar error
+        function mostrarError(mensaje) {
+            document.getElementById('mensajeError').textContent = mensaje;
+            document.getElementById('divError').style.display = 'block';
             
-            const tablaResultados = document.getElementById('tablaResultados');
-            tablaResultados.innerHTML = '';
+            // Efecto de aparición
+            const errorDiv = document.getElementById('divError');
+            errorDiv.style.opacity = '0';
+            errorDiv.style.transform = 'translateY(20px)';
+            errorDiv.style.transition = 'all 0.5s ease';
             
-            if (hits.length === 0) {
-                tablaResultados.innerHTML = '<tr><td colspan="5" class="text-center">No se encontraron resultados</td></tr>';
-                return;
+            setTimeout(() => {
+                errorDiv.style.opacity = '1';
+                errorDiv.style.transform = 'translateY(0)';
+            }, 50);
+        }
+        
+        // Permitir búsqueda con Enter
+        document.getElementById('textoBuscar').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                buscar(e);
             }
-            
-            hits.forEach((hit, index) => {
-                const row = document.createElement('tr');
-                const source = hit._source || {};
-                
-                // Crear vista del contenido (primeros 200 caracteres)
-                let contenidoVista = '';
-                if (source.contenido) {
-                    contenidoVista = source.contenido.substring(0, 200);
-                    if (source.contenido.length > 200) {
-                        contenidoVista += '...';
-                    }
-                } else if (source.texto) {
-                    contenidoVista = source.texto.substring(0, 200);
-                    if (source.texto.length > 200) {
-                        contenidoVista += '...';
-                    }
-                } else {
-                    const sourceStr = JSON.stringify(source, null, 2);
-                    contenidoVista = sourceStr.substring(0, 200);
-                    if (sourceStr.length > 200) {
-                        contenidoVista += '...';
-                    }
-                }
-                
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${hit._id || ''}</td>
-                    <td>${hit._score ? hit._score.toFixed(4) : 'N/A'}</td>
-                    <td><small>${hit._index || ''}</small></td>
-                    <td>
-                        <div class="text-truncate" style="max-width: 400px;" title="${source.contenido || source.texto || JSON.stringify(source).substring(0, 300)}">${contenidoVista}</div>
-                        <button class="btn btn-sm btn-link mt-1" onclick="mostrarDetalle(${index})" data-bs-toggle="modal" data-bs-target="#modalDetalle">
-                            Ver completo
-                        </button>
-                    </td>
-                `;
-                tablaResultados.appendChild(row);
-            });
-        }
-
-        // Reemplazar función mostrarHits
-        function mostrarHits(hits) {
-            mostrarHitsOriginal(hits);
-        }
+        });
     </script>
-
-    <!-- Modal para mostrar detalle completo -->
-    <div class="modal fade" id="modalDetalle" tabindex="-1" aria-labelledby="modalDetalleLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalDetalleLabel">Detalle del Documento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" id="modalDetalleBody">
-                    <!-- El contenido se mostrará aquí -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
-

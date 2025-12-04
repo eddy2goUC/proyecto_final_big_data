@@ -2,41 +2,398 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-sca  le=1.0">
-    <title>BigData-LuisFCG</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - BigData-MiProyecto</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="{{ url_for('static', filename='css/landingPage.css') }}" rel="stylesheet">
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header - Igual que las otras plantillas */
+        .header {
+            background: linear-gradient(90deg, #1a1a2e 0%, #16213e 100%);
+            padding: 1.2rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header h1 {
+            color: white;
+            font-weight: 700;
+            font-size: 1.8rem;
+            background: linear-gradient(to right, #8f94fb, #4e54c8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem !important;
+            margin: 0 0.2rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Contenido principal */
+        .main-content {
+            flex: 1;
+            padding: 4rem 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #1a1a2e;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #6c757d;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+        
+        /* Card de presentación */
+        .presentation-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            border-left: 5px solid #4e54c8;
+        }
+        
+        .presentation-name {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .presentation-degree {
+            font-size: 1.4rem;
+            color: #4e54c8;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .presentation-university {
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin-bottom: 1.5rem;
+        }
+        
+        .presentation-year {
+            display: inline-block;
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+            color: white;
+            padding: 0.5rem 2rem;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            box-shadow: 0 4px 15px rgba(78, 84, 200, 0.3);
+        }
+        
+        /* Features */
+        .features-section {
+            margin-top: 4rem;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .feature-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            height: 100%;
+            border-top: 3px solid #4e54c8;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #4e54c8;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-description {
+            color: #6c757d;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        /* Botones */
+        .cta-section {
+            margin-top: 3rem;
+            text-align: center;
+        }
+        
+        .btn-main {
+            background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+            color: white;
+            padding: 0.8rem 2.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(78, 84, 200, 0.3);
+        }
+        
+        .btn-main:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(78, 84, 200, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #4e54c8;
+            padding: 0.8rem 2.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: 2px solid #4e54c8;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            margin-left: 1rem;
+        }
+        
+        .btn-secondary:hover {
+            background: #4e54c8;
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        /* Footer - Igual que las otras plantillas */
+        footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        footer p {
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        #current-year {
+            font-weight: 600;
+            color: #8f94fb;
+        }
+        
+        #version_app {
+            background: rgba(255, 255, 255, 0.1);
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .presentation-card {
+                padding: 2rem;
+            }
+            
+            .presentation-name {
+                font-size: 1.8rem;
+            }
+            
+            .presentation-degree {
+                font-size: 1.2rem;
+            }
+            
+            .btn-main, .btn-secondary {
+                width: 100%;
+                margin-bottom: 1rem;
+                margin-left: 0;
+                justify-content: center;
+            }
+            
+            .nav-link {
+                padding: 0.5rem 0.8rem !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            
+            .presentation-card {
+                padding: 1.5rem;
+            }
+            
+            .presentation-name {
+                font-size: 1.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Header - Igual que las otras plantillas -->
     <header class="header">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <h1 class="h3 mb-0">BigData-MiProyecto</h1>
+                <h1 class="mb-0"><i class="fas fa-database me-2"></i>BigData-MiProyecto</h1>
                 <nav>
                     <ul class="nav">
-                        <li class="nav-item"><a class="nav-link" href="/buscador">Buscador</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/about">Acerca de</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/login">Ingresar</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/buscador"><i class="fas fa-search me-1"></i>Buscador</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/about"><i class="fas fa-info-circle me-1"></i>Acerca de</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/login"><i class="fas fa-sign-in-alt me-1"></i>Ingresar</a></li>
                     </ul>
                 </nav>
             </div>
         </div>
     </header>
 
-    <div class="container">
-        <h1 class="text-center">
-            Bienvenidos al proyecto de BigData<BR> 
-                creado por XYZ<br> 
-                como parte de <br>
-                un proyecto de clase<br> 
-                En la maestría de Analítica de Datos <br>
-                De la Universidad Central</h1>
-    </div>
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="hero-section">
+                <h1 class="hero-title">BigData-MiProyecto</h1>
+                <p class="hero-subtitle">Una plataforma avanzada para el análisis y gestión de datos</p>
+                
+                <div class="presentation-card">
+                    <h2 class="presentation-name">Edisson Jair González González</h2>
+                    <p class="presentation-degree">Maestría en Analítica de Datos</p>
+                    <p class="presentation-university">Universidad Central</p>
+                    <span class="presentation-year">2025</span>
+                </div>
+                
+                <div class="features-section">
+                    <h3 class="section-title">Características Principales</h3>
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4 class="feature-title">Análisis de Datos</h4>
+                                <p class="feature-description">
+                                    Implementación de técnicas modernas para el análisis y visualización de datos complejos.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <h4 class="feature-title">Gestión con MongoDB</h4>
+                                <p class="feature-description">
+                                    Manejo eficiente de grandes volúmenes de información utilizando MongoDB.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h4 class="feature-title">Búsqueda Avanzada</h4>
+                                <p class="feature-description">
+                                    Sistema de búsqueda inteligente con Elasticsearch para consultas complejas.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cta-section">
+                    <a href="/buscador" class="btn-main">
+                        <i class="fas fa-search"></i> Explorar Buscador
+                    </a>
+                    <a href="/about" class="btn-secondary">
+                        <i class="fas fa-info-circle"></i> Más Información
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
 
+    <!-- Footer -->
     <footer class="text-center">
-        <p class="mb-0">Creado por {{ creador }}</p>
-        <p class="mb-0" id="current-year"></p>
-        <p class="mb-0" id="version_app">{{ version }}</p>
+        <div class="container">
+            <p class="mb-2">Creado por {{ creador }}</p>
+            <p class="mb-2">&copy; <span id="current-year"></span> BigData-MiProyecto. Todos los derechos reservados.</p>
+            <p class="mb-0" id="version_app">Versión {{ version }}</p>
+        </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
@@ -44,4 +401,4 @@
         document.getElementById('current-year').textContent = new Date().getFullYear();
     </script>
 </body>
-</html> 
+</html>

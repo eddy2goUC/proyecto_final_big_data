@@ -1,9 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
+from flask import Flask, render_template, request, redirect, url_for,jsonify, session, flash
 from dotenv import load_dotenv
 import os
+
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from Helpers import MongoDB, ElasticSearch, Funciones, WebScraping
+
+
+from Helpers import MongoDB, Funciones, ElasticSearch, WebScraping
 
 # Cargar variables de entorno
 load_dotenv()
@@ -16,14 +19,15 @@ MONGO_URI = os.getenv('MONGO_URI')
 MONGO_DB = os.getenv('MONGO_DB')
 MONGO_COLECCION = os.getenv('MONGO_COLECCION', 'usuario_roles')
 
+
 # Configuración ElasticSearch Cloud
-ELASTIC_CLOUD_URL = os.getenv('ELASTIC_CLOUD_URL')
-ELASTIC_API_KEY = os.getenv('ELASTIC_API_KEY')
-ELASTIC_INDEX_DEFAULT = os.getenv('ELASTIC_INDEX_DEFAULT', 'index_cuentos')
+ELASTIC_CLOUD_URL       = os.getenv('ELASTIC_CLOUD_URL')
+ELASTIC_API_KEY         = os.getenv('ELASTIC_API_KEY')
+ELASTIC_INDEX_DEFAULT   = os.getenv('ELASTIC_INDEX_DEFAULT', 'proyecto_big_data')
 
 # Versión de la aplicación
-VERSION_APP = "1.2.0"
-CREATOR_APP = "LuisFCG"
+VERSION_APP = "1.0.0"
+CREATOR_APP = "Eddy2Go"
 
 # Inicializar conexiones
 mongo = MongoDB(MONGO_URI, MONGO_DB)
@@ -40,7 +44,7 @@ def about():
     """Página About"""
     return render_template('about.html', version=VERSION_APP, creador=CREATOR_APP)
 
-# --------------rutas del buscador en elastic-inicio-------------
+#--------------rutas del buscador en elastic-inicio-------------
 @app.route('/buscador')
 def buscador():
     """Página de búsqueda pública"""
@@ -48,11 +52,17 @@ def buscador():
 
 @app.route('/buscar-elastic', methods=['POST'])
 def buscar_elastic():
+
     """API para realizar búsqueda en ElasticSearch"""
     try:
         data = request.get_json()
         texto_buscar = data.get('texto', '').strip()
+
+        campo = data.get('campo', '_all') # _opciones (traidos de un select del formulario): titulo, contenido, autor, fecha_creacion
+        #campo = 'texto'
+
         campo = data.get('campo', '_all')
+
         
         if not texto_buscar:
             return jsonify({
@@ -60,16 +70,20 @@ def buscar_elastic():
                 'error': 'Texto de búsqueda es requerido'
             }), 400
         
+
+        # Definir aggregations/filtros
+
         # Definir aggregations
-        query_base = {
-            "query": {
-                "match": {
-                    campo: texto_buscar
-                }
-            }
-        }
-        
-        aggs = {
+
+        query_base= {"query": {
+                            "match": {
+                                campo: texto_buscar
+                            }
+
+                        } 
+
+                        }
+        aggs= {
             "cuentos_por_mes": {
                 "date_histogram": {
                     "field": "fecha_creacion",
@@ -84,13 +98,21 @@ def buscar_elastic():
             }
         }
         
+
         # Ejecutar búsqueda sobre elastic
+
+        # Ejecutar búsqueda con match_phrase
+
         resultado = elastic.buscar(
             index=ELASTIC_INDEX_DEFAULT,
             query=query_base,
             aggs=aggs,            
             size=100
         )
+
+        #print(resultado) 
+
+
         
         return jsonify(resultado)
         
@@ -99,8 +121,8 @@ def buscar_elastic():
             'success': False,
             'error': str(e)
         }), 500
-
-# --------------rutas de mongodb (usuarios)-inicio-------------
+#--------------rutas del buscador en elastic-fin-------------
+#--------------rutas de mongodb (usuarios)-inicio-------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Página de login con validación"""
@@ -127,6 +149,7 @@ def login():
 @app.route('/listar-usuarios')
 def listar_usuarios():
     try:
+
         usuarios = mongo.listar_usuarios(MONGO_COLECCION)
         
         # Convertir ObjectId a string para serialización JSON
@@ -135,11 +158,11 @@ def listar_usuarios():
         
         return jsonify(usuarios)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500 
 
 @app.route('/gestor_usuarios')
 def gestor_usuarios():
-    """Página de gestión de usuarios (protegida requiere login y permiso admin_usuarios)"""
+    """Página de gestión de usuarios (protegida requiere login y permiso admin_usuarios) """
     if not session.get('logged_in'):
         flash('Por favor, inicia sesión para acceder a esta página', 'warning')
         return redirect(url_for('login'))
@@ -264,7 +287,8 @@ def eliminar_usuario():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# --------------rutas de elasitcsearch - inicio-------------
+#--------------rutas de mongodb (usuarios)-fin-------------
+#--------------rutas de elasitcsearch - inicio-------------
 @app.route('/gestor_elastic')
 def gestor_elastic():
     """Página de gestión de ElasticSearch (protegida requiere login y permiso admin_elastic)"""
@@ -294,7 +318,7 @@ def listar_indices_elastic():
         return jsonify(indices)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
+    
 @app.route('/ejecutar-query-elastic', methods=['POST'])
 def ejecutar_query_elastic():
     """API para ejecutar una query en ElasticSearch"""
@@ -331,170 +355,6 @@ def cargar_doc_elastic():
     
     return render_template('documentos_elastic.html', usuario=session.get('usuario'), permisos=permisos, version=VERSION_APP, creador=CREATOR_APP)
 
-@app.route('/procesar-zip-elastic', methods=['POST'])
-def procesar_zip_elastic():
-    """API para procesar archivo ZIP con archivos JSON"""
-    try:
-        if not session.get('logged_in'):
-            return jsonify({'success': False, 'error': 'No autorizado'}), 401
-        
-        permisos = session.get('permisos', {})
-        if not permisos.get('admin_data_elastic'):
-            return jsonify({'success': False, 'error': 'No tiene permisos para cargar datos'}), 403
-        
-        if 'file' not in request.files:
-            return jsonify({'success': False, 'error': 'No se envió ningún archivo'}), 400
-        
-        file = request.files['file']
-        index = request.form.get('index')
-        
-        if not file.filename:
-            return jsonify({'success': False, 'error': 'Archivo no válido'}), 400
-        
-        if not index:
-            return jsonify({'success': False, 'error': 'Índice no especificado'}), 400
-        
-        # Guardar archivo ZIP temporalmente
-        filename = secure_filename(file.filename)
-        carpeta_upload = 'static/uploads'
-        Funciones.crear_carpeta(carpeta_upload)
-        Funciones.borrar_contenido_carpeta(carpeta_upload)
-        
-        zip_path = os.path.join(carpeta_upload, filename)
-        file.save(zip_path)
-        print(f"Archivo ZIP guardado en: {zip_path}")
-        
-        # Descomprimir ZIP
-        archivos = Funciones.descomprimir_zip_local(zip_path, carpeta_upload)
-        
-        # Eliminar archivo ZIP
-        os.remove(zip_path)
-        
-        # Listar archivos JSON
-        archivos_json = Funciones.listar_archivos_json(carpeta_upload)
-        
-        return jsonify({
-            'success': True,
-            'archivos': archivos_json,
-            'mensaje': f'Se encontraron {len(archivos_json)} archivos JSON'
-        })
-        
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-@app.route('/cargar-documentos-elastic', methods=['POST'])
-def cargar_documentos_elastic():
-    """API para cargar documentos a ElasticSearch"""
-    try:
-        if not session.get('logged_in'):
-            return jsonify({'success': False, 'error': 'No autorizado'}), 401
-        
-        permisos = session.get('permisos', {})
-        if not permisos.get('admin_data_elastic'):
-            return jsonify({'success': False, 'error': 'No tiene permisos para cargar datos'}), 403
-        
-        data = request.get_json()
-        archivos = data.get('archivos', [])
-        index = data.get('index')
-        metodo = data.get('metodo', 'zip')
-        
-        if not archivos or not index:
-            return jsonify({'success': False, 'error': 'Archivos e índice son requeridos'}), 400
-        
-        documentos = []
-        
-        if metodo == 'zip':
-            # Cargar archivos JSON directamente
-            for archivo in archivos:
-                ruta = archivo.get('ruta')
-                print(f"Procesando archivo JSON: {ruta}")
-                if ruta and os.path.exists(ruta):
-                    doc = Funciones.leer_json(ruta)
-                    print(doc)
-                    if doc:
-                        documentos.append(doc)
-        
-        elif metodo == 'webscraping':
-            # Procesar archivos con PLN
-            # pln = PLN(cargar_modelos=True)  # Descomentar cuando tengas el módulo PLN
-            
-            for archivo in archivos:
-                ruta = archivo.get('ruta')
-                if not ruta or not os.path.exists(ruta):
-                    continue
-                
-                extension = archivo.get('extension', '').lower()
-                
-                # Extraer texto según tipo de archivo
-                texto = ""
-                if extension == 'pdf':
-                    # Intentar extracción normal
-                    texto = Funciones.extraer_texto_pdf(ruta)
-                    
-                    # Si no se extrajo texto, intentar con OCR
-                    if not texto or len(texto.strip()) < 100:
-                        try:
-                            texto = Funciones.extraer_texto_pdf_ocr(ruta)
-                        except:
-                            pass
-                
-                elif extension == 'txt':
-                    try:
-                        with open(ruta, 'r', encoding='utf-8') as f:
-                            texto = f.read()
-                    except:
-                        try:
-                            with open(ruta, 'r', encoding='latin-1') as f:
-                                texto = f.read()
-                        except:
-                            pass
-                
-                if not texto or len(texto.strip()) < 50:
-                    continue
-                
-                # Procesar con PLN (comentado temporalmente)
-                try:
-                    # resumen = pln.generar_resumen(texto, num_oraciones=3)
-                    # entidades = pln.extraer_entidades(texto)
-                    # temas = pln.extraer_temas(texto, top_n=10)
-                    
-                    resumen = ""            # borrar en producción
-                    entidades = ""          # borrar en producción
-                    temas = ""              # borrar en producción
-                    
-                    # Crear documento
-                    documento = {
-                        'texto': texto,
-                        'fecha': datetime.now().isoformat(),
-                        'ruta': ruta,
-                        'nombre_archivo': archivo.get('nombre', ''),
-                        'resumen': resumen,
-                        'entidades': entidades,
-                        'temas': [{'palabra': palabra, 'relevancia': relevancia} for palabra, relevancia in temas]
-                    }
-                    
-                    documentos.append(documento)
-                
-                except Exception as e:
-                    print(f"Error al procesar {archivo.get('nombre')}: {e}")
-                    continue
-            
-            # pln.close()  # Descomentar cuando tengas el módulo PLN
-        
-        if not documentos:
-            return jsonify({'success': False, 'error': 'No se pudieron procesar documentos'}), 400
-        
-        # Indexar documentos en Elastic
-        resultado = elastic.indexar_bulk(index, documentos)
-        
-        return jsonify({
-            'success': resultado['success'],
-            'indexados': resultado['indexados'],
-            'errores': resultado['fallidos']
-        })
-        
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/procesar-webscraping-elastic', methods=['POST'])
 def procesar_webscraping_elastic():
@@ -565,6 +425,172 @@ def procesar_webscraping_elastic():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/procesar-zip-elastic', methods=['POST'])
+def procesar_zip_elastic():
+    """API para procesar archivo ZIP con archivos JSON"""
+    try:
+        if not session.get('logged_in'):
+            return jsonify({'success': False, 'error': 'No autorizado'}), 401
+        
+        permisos = session.get('permisos', {})
+        if not permisos.get('admin_data_elastic'):
+            return jsonify({'success': False, 'error': 'No tiene permisos para cargar datos'}), 403
+        
+        if 'file' not in request.files:
+            return jsonify({'success': False, 'error': 'No se envió ningún archivo'}), 400
+        
+        file = request.files['file']
+        index = request.form.get('index')
+        
+        if not file.filename:
+            return jsonify({'success': False, 'error': 'Archivo no válido'}), 400
+        
+        if not index:
+            return jsonify({'success': False, 'error': 'Índice no especificado'}), 400
+        
+        # Guardar archivo ZIP temporalmente
+        filename = secure_filename(file.filename)
+        carpeta_upload = 'static/uploads'
+        Funciones.crear_carpeta(carpeta_upload)
+        Funciones.borrar_contenido_carpeta(carpeta_upload)
+        
+        zip_path = os.path.join(carpeta_upload, filename)
+        file.save(zip_path)
+        print(f"Archivo ZIP guardado en: {zip_path}")
+        
+        # Descomprimir ZIP
+        archivos = Funciones.descomprimir_zip_local(zip_path, carpeta_upload)
+        
+        # Eliminar archivo ZIP
+        os.remove(zip_path)
+        
+        # Listar archivos JSON
+        archivos_json = Funciones.listar_archivos_json(carpeta_upload)
+        
+        return jsonify({
+            'success': True,
+            'archivos': archivos_json,
+            'mensaje': f'Se encontraron {len(archivos_json)} archivos JSON'
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+@app.route('/cargar-documentos-elastic', methods=['POST'])
+def cargar_documentos_elastic():
+    """API para cargar documentos a ElasticSearch"""
+    try:
+        if not session.get('logged_in'):
+            return jsonify({'success': False, 'error': 'No autorizado'}), 401
+        
+        permisos = session.get('permisos', {})
+        if not permisos.get('admin_data_elastic'):
+            return jsonify({'success': False, 'error': 'No tiene permisos para cargar datos'}), 403
+        
+        data = request.get_json()
+        archivos = data.get('archivos', [])
+        index = data.get('index')
+        metodo = data.get('metodo', 'zip')
+        
+        if not archivos or not index:
+            return jsonify({'success': False, 'error': 'Archivos e índice son requeridos'}), 400
+        
+        documentos = []
+        
+        if metodo == 'zip':
+            # Cargar archivos JSON directamente
+            for archivo in archivos:
+                ruta = archivo.get('ruta')
+                print(f"Procesando archivo JSON: {ruta}")
+                if ruta and os.path.exists(ruta):
+                    doc = Funciones.leer_json(ruta)
+                    print(doc)
+                    if doc:
+                        documentos.append(doc)
+        
+        elif metodo == 'webscraping':
+            # Procesar archivos con PLN
+            #pln = PLN(cargar_modelos=True)
+            
+            for archivo in archivos:
+                ruta = archivo.get('ruta')
+                if not ruta or not os.path.exists(ruta):
+                    continue
+                
+                extension = archivo.get('extension', '').lower()
+                
+                # Extraer texto según tipo de archivo
+                texto = ""
+                if extension == 'pdf':
+                    # Intentar extracción normal
+                    texto = Funciones.extraer_texto_pdf(ruta)
+                    
+                    # Si no se extrajo texto, intentar con OCR
+                    if not texto or len(texto.strip()) < 100:
+                        try:
+                            texto = Funciones.extraer_texto_pdf_ocr(ruta)
+                        except:
+                            pass
+                
+                elif extension == 'txt':
+                    try:
+                        with open(ruta, 'r', encoding='utf-8') as f:
+                            texto = f.read()
+                    except:
+                        try:
+                            with open(ruta, 'r', encoding='latin-1') as f:
+                                texto = f.read()
+                        except:
+                            pass
+                
+                if not texto or len(texto.strip()) < 50:
+                    continue
+                
+                # Procesar con PLN
+                try:
+                    #resumen = pln.generar_resumen(texto, num_oraciones=3)
+                    #entidades = pln.extraer_entidades(texto)
+                    #temas = pln.extraer_temas(texto, top_n=10)
+
+                    resumen = ""            #borrar en produccion
+                    entidades = ""          #borrar en produccion
+                    temas = ""              #borrar en produccion
+                    
+                    # Crear documento
+                    documento = {
+                        'texto': texto,
+                        'fecha': datetime.now().isoformat(),
+                        'ruta': ruta,
+                        'nombre_archivo': archivo.get('nombre', ''),
+                        'resumen': resumen,
+                        'entidades': entidades,
+                        'temas': [{'palabra': palabra, 'relevancia': relevancia} for palabra, relevancia in temas]
+                    }
+                    
+                    documentos.append(documento)
+                
+                except Exception as e:
+                    print(f"Error al procesar {archivo.get('nombre')}: {e}")
+                    continue
+            
+            #pln.close()
+        
+        if not documentos:
+            return jsonify({'success': False, 'error': 'No se pudieron procesar documentos'}), 400
+        
+        # Indexar documentos en Elastic
+        resultado = elastic.indexar_bulk(index, documentos)
+        
+        return jsonify({
+            'success': resultado['success'],
+            'indexados': resultado['indexados'],
+            'errores': resultado['fallidos']
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+#--------------rutas de elasitcsearch - fin-------------
 @app.route('/admin')
 def admin():
     """Página de administración (protegida requiere login)"""
@@ -573,6 +599,8 @@ def admin():
         return redirect(url_for('login'))
     
     return render_template('admin.html', usuario=session.get('usuario'), permisos=session.get('permisos'))
+
+
 
 # ====== MAIN ======
 if __name__ == '__main__':
@@ -593,6 +621,5 @@ if __name__ == '__main__':
     else:
         print("❌ ElasticSearch Cloud: Error de conexión")
 
-    # Ejecutar la aplicación
-    port = int(os.environ.get('PORT', 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    # Ejecutar la aplicación (localmente para pruebas)
+    app.run(debug=True, host='0.0.0.0', port=5000)
