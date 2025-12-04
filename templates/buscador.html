@@ -721,7 +721,7 @@
             if (aggs.cuentos_por_mes && aggs.cuentos_por_mes.buckets) {
                 html += `
                     <div class="agg-item">
-                        <h6><i class="fas fa-calendar-alt me-2"></i>Cuentos por Mes</h6>
+                        <h6><i class="fas fa-calendar-alt me-2"></i>Documentos por Mes</h6>
                         <ul class="agg-list">
                 `;
                 
@@ -744,11 +744,38 @@
                 `;
             }
             
+            // Procesar documentos_por_mes si existe (nuevo nombre de agregación)
+            if (aggs.documentos_por_mes && aggs.documentos_por_mes.buckets && (!aggs.cuentos_por_mes || !aggs.cuentos_por_mes.buckets)) {
+                html += `
+                    <div class="agg-item">
+                        <h6><i class="fas fa-calendar-alt me-2"></i>Documentos por Mes</h6>
+                        <ul class="agg-list">
+                `;
+                
+                aggs.documentos_por_mes.buckets.forEach(bucket => {
+                    const fecha = new Date(bucket.key_as_string || bucket.key).toLocaleDateString('es-ES', { 
+                        year: 'numeric', 
+                        month: 'long' 
+                    });
+                    html += `
+                        <li>
+                            <span>${fecha}</span>
+                            <span class="agg-count">${bucket.doc_count}</span>
+                        </li>
+                    `;
+                });
+                
+                html += `
+                        </ul>
+                    </div>
+                `;
+            }
+            
             // Procesar cuentos_por_autor
             if (aggs.cuentos_por_autor && aggs.cuentos_por_autor.buckets) {
                 html += `
                     <div class="agg-item">
-                        <h6><i class="fas fa-user-edit me-2"></i>Cuentos por Autor</h6>
+                        <h6><i class="fas fa-user-edit me-2"></i>Documentos por Autor</h6>
                         <ul class="agg-list">
                 `;
                 

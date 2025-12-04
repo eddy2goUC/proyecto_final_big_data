@@ -222,7 +222,8 @@ class ElasticSearch:
                 'success': True,
                 'total': response['hits']['total']['value'],
                 'resultados': response['hits']['hits'],
-                'aggs': aggs
+                'hits': response['hits']['hits'],
+                'aggs': response.get('aggregations', {})
             }
         except Exception as e:
             return {

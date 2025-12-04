@@ -58,11 +58,7 @@ def buscar_elastic():
         data = request.get_json()
         texto_buscar = data.get('texto', '').strip()
 
-        campo = data.get('campo', '_all') # _opciones (traidos de un select del formulario): titulo, contenido, autor, fecha_creacion
-        #campo = 'texto'
-
-        campo = data.get('campo', '_all')
-
+        campo = data.get('campo', 'texto')  # Por defecto buscar en 'texto'
         
         if not texto_buscar:
             return jsonify({
@@ -71,38 +67,48 @@ def buscar_elastic():
             }), 400
         
 
-        # Definir aggregations/filtros
+        # Construir query multi_match para buscar en múltiples campos
+        # Si se especifica un campo, usar solo ese; si no, buscar en todos
+        if campo and campo != '_all':
+            # Búsqueda en un campo específico
+            query_base = {
+                "query": {
+                    "match": {
+                        campo: {
+                            "query": texto_buscar,
+                            "operator": "or",
+                            "fuzziness": "AUTO"
+                        }
+                    }
+                }
+            }
+        else:
+            # Búsqueda en múltiples campos (mejor para búsqueda general)
+            query_base = {
+                "query": {
+                    "multi_match": {
+                        "query": texto_buscar,
+                        "fields": ["texto^3", "nombre_archivo^2", "resumen"],
+                        "type": "best_fields",
+                        "operator": "or",
+                        "fuzziness": "AUTO"
+                    }
+                }
+            }
 
         # Definir aggregations
-
-        query_base= {"query": {
-                            "match": {
-                                campo: texto_buscar
-                            }
-
-                        } 
-
-                        }
-        aggs= {
-            "cuentos_por_mes": {
+        aggs = {
+            "documentos_por_mes": {
                 "date_histogram": {
-                    "field": "fecha_creacion",
+                    "field": "fecha",
                     "calendar_interval": "month"
-                }
-            },
-            "cuentos_por_autor": {
-                "terms": {
-                    "field": "autor",
-                    "size": 10
                 }
             }
         }
         
-
         # Ejecutar búsqueda sobre elastic
-
-        # Ejecutar búsqueda con match_phrase
-
+        print(f"Ejecutando búsqueda: '{texto_buscar}'")
+        
         resultado = elastic.buscar(
             index=ELASTIC_INDEX_DEFAULT,
             query=query_base,
@@ -110,8 +116,7 @@ def buscar_elastic():
             size=100
         )
 
-        #print(resultado) 
-
+        print(f"Resultado de búsqueda: success={resultado.get('success')}, total={resultado.get('total')}")
 
         
         return jsonify(resultado)
